@@ -1,0 +1,11 @@
+{
+  "name": "angular-touch-nav",
+  "version": "0.2.1",
+  "dependencies": {
+  },
+  "devDependencies": {
+    "angular-unstable": "latest",
+    "angular-mocks": "latest",
+    "jquery": "latest"
+  }
+}
