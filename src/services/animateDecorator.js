@@ -23,6 +23,14 @@ angular.module('ngTouchNav')
           return onEnd;
         }
 
+        function parseMaxTime(str) {
+          var total = 0, values = angular.isString(str) ? str.split(/\s*,\s*/) : [];
+          forEach(values, function(value) {
+            total = Math.max(parseFloat(value) || 0, total);
+          });
+          return total;
+        }
+
         function startAnimation() {
           var duration = 0;
           forEach(className.split(' '), function(klass, i) {
@@ -32,19 +40,66 @@ angular.module('ngTouchNav')
           element.addClass(activeClassName);
 
           //one day all browsers will have these properties
-          var w3cAnimationEvent = 'animationend';
-          var w3cTransitionEvent = 'transitionend';
+          var w3cAnimationProp = 'animation';
+          var w3cTransitionProp = 'transition';
 
           //but some still use vendor-prefixed styles
-          var vendorAnimationEvent = $sniffer.vendorPrefix + 'AnimationEnd';
-          var vendorTransitionEvent = $sniffer.vendorPrefix + 'TransitionEnd';
+          var vendorAnimationProp = $sniffer.vendorPrefix + 'Animation';
+          var vendorTransitionProp = $sniffer.vendorPrefix + 'Transition';
+
+          var durationKey = 'Duration',
+              delayKey = 'Delay',
+              animationIterationCountKey = 'IterationCount';
+
+          //we want all the styles defined before and after
+          var ELEMENT_NODE = 1;
+          forEach(element, function(element) {
+            if (element.nodeType == ELEMENT_NODE) {
+              var elementStyles = $window.getComputedStyle(element) || {};
+
+              var transitionDelay     = Math.max(parseMaxTime(elementStyles[w3cTransitionProp     + delayKey]),
+                                                 parseMaxTime(elementStyles[vendorTransitionProp  + delayKey]));
+
+              var animationDelay      = Math.max(parseMaxTime(elementStyles[w3cAnimationProp      + delayKey]),
+                                                 parseMaxTime(elementStyles[vendorAnimationProp   + delayKey]));
+
+              var transitionDuration  = Math.max(parseMaxTime(elementStyles[w3cTransitionProp     + durationKey]),
+                                                 parseMaxTime(elementStyles[vendorTransitionProp  + durationKey]));
+
+              var animationDuration   = Math.max(parseMaxTime(elementStyles[w3cAnimationProp      + durationKey]),
+                                                 parseMaxTime(elementStyles[vendorAnimationProp   + durationKey]));
+
+              if(animationDuration > 0) {
+                animationDuration *= Math.max(parseInt(elementStyles[w3cAnimationProp   + animationIterationCountKey]) || 0,
+                                             parseInt(elementStyles[vendorAnimationProp + animationIterationCountKey]) || 0,
+                                             1);
+              }
+
+              duration = Math.max(animationDelay  + animationDuration,
+                                  transitionDelay + transitionDuration,
+                                  duration);
+            }
+          });
+
+          if(!duration) {
+            return $timeout(done, 0, false);
+          }
 
           //listen for animation events instead of parsing
           //computed styles for a correctly synced animation
+
+          //one day all browsers will have these events
+          var w3cAnimationEvent = 'animationend';
+          var w3cTransitionEvent = 'transitionend';
+
+          //but some still use vendor-prefixed events
+          var vendorAnimationEvent = $sniffer.vendorPrefix + 'AnimationEnd';
+          var vendorTransitionEvent = $sniffer.vendorPrefix + 'TransitionEnd';
+
           var events = [w3cAnimationEvent, vendorAnimationEvent, w3cTransitionEvent, vendorTransitionEvent].join(' ');
           var callback = function() {
-            $timeout(done, 0, false);
             element.off(events, callback);
+            $timeout(done, 0, false);
           };
           element.on(events, callback);
 
