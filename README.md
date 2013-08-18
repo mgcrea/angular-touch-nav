@@ -47,7 +47,7 @@ Documentation for v2.3.2 has been made available for the time being at [http://g
 
 
 
-## Compiling CSS and JavaScript
+## Compiling Styles and JavaScript
 
 This project uses [Grunt](http://gruntjs.com/) with convenient methods for working with the framework. It's how we compile our code, run tests, and more. To use it, install the required dependencies as directed and then run some Grunt commands.
 
@@ -64,17 +64,10 @@ When completed, you'll be able to run the various Grunt commands provided from t
 
 ### Available Grunt commands
 
-#### Build - `grunt`
-Run `grunt` to run tests locally and compile the CSS and JavaScript into `/dist`. **Requires [recess](https://github.com/twitter/recess) and [uglify-js](https://github.com/mishoo/UglifyJS).**
-
-#### Only compile CSS and JavaScript - `grunt dist`
-`grunt dist` creates the `/dist` directory with compiled files. **Requires [recess](https://github.com/twitter/recess) and [uglify-js](https://github.com/mishoo/UglifyJS).**
-
-#### Tests - `grunt test`
-Runs jshint and unit tests headlessly in [phantomjs](https://github.com/ariya/phantomjs/) (used for CI). **Requires [phantomjs](https://github.com/ariya/phantomjs/).**
-
-#### Watch - `grunt watch`
-This is a convenience method for watching just Less files and automatically building them whenever you save.
+* Build - `grunt` - runs tests locally and compile the CSS and JavaScript into `/dist`.
+* Compile - `grunt dist` - creates the `/dist` directory with compiled files.
+* Tests - `grunt test` - runs jshint and unit tests headlessly in [phantomjs](https://github.com/ariya/phantomjs/) (used for CI).
+* Watch - `grunt watch` - watching files and automatically building them whenever you save.
 
 ### Troubleshooting dependencies
 
@@ -86,7 +79,9 @@ Should you encounter problems with installing dependencies or running Grunt comm
 
 Please read through our guidelines for contributing. Included are directions for opening issues, coding standards, and notes on development.
 
-More over, if your pull request contains JavaScript patches or features, you must include relevant unit tests. <!-- All HTML and CSS should conform to the [Code Guide](http://github.com/mdo/code-guide), maintained by [Mark Otto](http://github.com/mdo). -->
+More over, if your pull request contains JavaScript patches or features, you must include relevant unit tests.
+
+<!-- All HTML and CSS should conform to the [Code Guide](http://github.com/mdo/code-guide), maintained by [Mark Otto](http://github.com/mdo). -->
 
 Editor preferences are available in the [editor config](.editorconfig) for easy use in common text editors. Read more and download plugins at [http://editorconfig.org](http://editorconfig.org).
 
