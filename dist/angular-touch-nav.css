@@ -1,0 +1,61 @@
+/**
+ * angular-touch-nav
+ * @version v0.2.1 - 2013-08-22
+ * @link https://github.com/mgcrea/angular-touch-nav
+ * @author Olivier Louvignes <olivier@mg-crea.com>
+ * @license MIT License, http://www.opensource.org/licenses/MIT
+ */
+.animation-fade {
+  -webkit-backface-visibility: hidden;
+  -webkit-transition: opacity .2s ease;
+  transition: opacity .2s ease;
+}
+.animation-fade.ng-enter {
+  opacity: 0;
+}
+.animation-fade.ng-enter.ng-enter-active {
+  opacity: 1;
+}
+.animation-fade.ng-leave {
+  opacity: 1;
+}
+.animation-fade.ng-leave.ng-leave-active {
+  opacity: 0;
+}
+.animation-slide {
+  -webkit-backface-visibility: hidden;
+  -webkit-transition: -webkit-transform 0.3s ease;
+  transition: transform .3s ease;
+}
+.animation-slide.ng-enter {
+  -webkit-transform: translate3d(100%, 0, 0);
+  transform: translate3d(100%, 0, 0);
+}
+.animation-slide.ng-enter.ng-enter-active {
+  -webkit-transform: translate3d(0, 0, 0);
+  transform: translate3d(0, 0, 0);
+}
+.animation-slide.ng-leave {
+  -webkit-transform: translate3d(0, 0, 0);
+  transform: translate3d(0, 0, 0);
+}
+.animation-slide.ng-leave.ng-leave-active {
+  -webkit-transform: translate3d(-100%, 0, 0);
+  transform: translate3d(-100%, 0, 0);
+}
+.animation-slide.ng-enter.ng-reverse {
+  -webkit-transform: translate3d(-100%, 0, 0);
+  transform: translate3d(-100%, 0, 0);
+}
+.animation-slide.ng-enter.ng-reverse.ng-enter-active.ng-reverse {
+  -webkit-transform: translate3d(0, 0, 0);
+  transform: translate3d(0, 0, 0);
+}
+.animation-slide.ng-leave.ng-reverse {
+  -webkit-transform: translate3d(0, 0, 0);
+  transform: translate3d(0, 0, 0);
+}
+.animation-slide.ng-leave.ng-reverse.ng-leave-active.ng-reverse {
+  -webkit-transform: translate3d(100%, 0, 0);
+  transform: translate3d(100%, 0, 0);
+}

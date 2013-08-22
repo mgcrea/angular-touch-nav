@@ -119,9 +119,34 @@ module.exports = function(grunt) {
         autoWatch: true
       }
     },
+    less: {
+      options: {
+        banner: '<%= meta.banner %>'
+      },
+      src: {
+        files: {
+          '<%= yo.dist %>/<%= pkg.name %>.css': ['<%= yo.src %>/styles/*.less']
+        }
+      },
+      dist: {
+        options: {
+          yuicompress: true
+        },
+        files: {
+          '<%= yo.dist %>/<%= pkg.name %>.min.css': ['<%= Object.keys(less.src.files)[0] %>']
+        }
+      }
+    },
     concat: {
       options: {
         banner: '<%= meta.banner %>'
+      },
+      banner: {
+        files: {
+          '<%= Object.keys(ngmin.dist.files)[0] %>': '<%= Object.keys(ngmin.dist.files)[0] %>',
+          '<%= Object.keys(less.src.files)[0] %>': '<%= Object.keys(less.src.files)[0] %>',
+          '<%= Object.keys(less.dist.files)[0] %>': '<%= Object.keys(less.dist.files)[0] %>'
+        }
       },
       dist: {
         options: {
@@ -171,9 +196,11 @@ module.exports = function(grunt) {
 
   grunt.registerTask('build', [
     'clean:dist',
+    'less',
     'concat:dist',
     'ngmin:dist',
-    'uglify:dist'
+    'uglify:dist',
+    'concat:banner'
   ]);
 
   grunt.registerTask('release', [

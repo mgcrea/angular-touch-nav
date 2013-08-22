@@ -1,0 +1,56 @@
+
+.animation-fade {
+  -webkit-backface-visibility: hidden;
+  -webkit-transition: opacity .2s ease;
+  transition: opacity .2s ease;
+  &.ng-enter {
+    opacity: 0;
+    &.ng-enter-active {
+      opacity: 1;
+    }
+  }
+  &.ng-leave {
+    opacity: 1;
+    &.ng-leave-active {
+      opacity: 0;
+    }
+  }
+}
+
+.animation-slide {
+  -webkit-backface-visibility: hidden;
+  -webkit-transition: -webkit-transform .3s ease;
+  transition: transform .3s ease;
+  &.ng-enter {
+    -webkit-transform: translate3d(100%, 0, 0);
+    transform: translate3d(100%, 0, 0);
+    &.ng-enter-active {
+      -webkit-transform: translate3d(0, 0, 0);
+      transform: translate3d(0, 0, 0);
+    }
+  }
+  &.ng-leave {
+    -webkit-transform: translate3d(0, 0, 0);
+    transform: translate3d(0, 0, 0);
+    &.ng-leave-active {
+      -webkit-transform: translate3d(-100%, 0, 0);
+      transform: translate3d(-100%, 0, 0);
+    }
+  }
+  &.ng-enter.ng-reverse {
+    -webkit-transform: translate3d(-100%, 0, 0);
+    transform: translate3d(-100%, 0, 0);
+    &.ng-enter-active.ng-reverse {
+      -webkit-transform: translate3d(0, 0, 0);
+      transform: translate3d(0, 0, 0);
+    }
+  }
+  &.ng-leave.ng-reverse {
+    -webkit-transform: translate3d(0, 0, 0);
+    transform: translate3d(0, 0, 0);
+    &.ng-leave-active.ng-reverse {
+      -webkit-transform: translate3d(100%, 0, 0);
+      transform: translate3d(100%, 0, 0);
+    }
+  }
+}
