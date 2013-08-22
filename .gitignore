@@ -1,4 +1,6 @@
-/bower_components/
-/node_modules/
 
+bower_components/
+node_modules/
+.sublime-project
+.sublime-workspace
 .DS_Store
