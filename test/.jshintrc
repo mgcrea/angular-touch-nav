@@ -1,14 +1,18 @@
 {
+
   "node": true,
   "browser": true,
+  "jquery": true,
+  "devel": false,
   "esnext": true,
   "bitwise": true,
+
   "camelcase": false,
   "curly": false,
   "eqeqeq": true,
   "immed": true,
   "indent": 2,
-  "latedef": true,
+  "latedef": false,
   "newcap": true,
   "noarg": true,
   "quotmark": "single",
@@ -16,12 +20,17 @@
   "undef": true,
   "unused": false,
   "strict": true,
-  "globalstrict": true,
   "trailing": true,
   "smarttabs": true,
+
+  "boss": true,
+  "eqnull": false,
+  "expr": true,
+
   "predef": [
     "$",
     "angular",
+    "jasmine",
     "describe",
     "beforeEach",
     "afterEach",
@@ -29,4 +38,5 @@
     "it",
     "expect"
   ]
+
 }

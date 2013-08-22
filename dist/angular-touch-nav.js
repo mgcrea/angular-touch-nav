@@ -1,6 +1,6 @@
 /**
  * angular-touch-nav
- * @version v0.2.1 - 2013-08-17
+ * @version v0.2.1 - 2013-08-22
  * @link https://github.com/mgcrea/angular-touch-nav
  * @author Olivier Louvignes <olivier@mg-crea.com>
  * @license MIT License, http://www.opensource.org/licenses/MIT
@@ -103,12 +103,41 @@ angular.module('ngTouchNav').config([
             $timeout(startAnimation, 1, false);
             return onEnd;
           }
+          function parseMaxTime(str) {
+            var total = 0, values = angular.isString(str) ? str.split(/\s*,\s*/) : [];
+            forEach(values, function (value) {
+              total = Math.max(parseFloat(value) || 0, total);
+            });
+            return total;
+          }
           function startAnimation() {
             var duration = 0;
             forEach(className.split(' '), function (klass, i) {
               activeClassName += (i > 0 ? ' ' : '') + klass + '-active';
             });
             element.addClass(activeClassName);
+            var w3cAnimationProp = 'animation';
+            var w3cTransitionProp = 'transition';
+            var vendorAnimationProp = $sniffer.vendorPrefix + 'Animation';
+            var vendorTransitionProp = $sniffer.vendorPrefix + 'Transition';
+            var durationKey = 'Duration', delayKey = 'Delay', animationIterationCountKey = 'IterationCount';
+            var ELEMENT_NODE = 1;
+            forEach(element, function (element) {
+              if (element.nodeType === ELEMENT_NODE) {
+                var elementStyles = $window.getComputedStyle(element) || {};
+                var transitionDelay = Math.max(parseMaxTime(elementStyles[w3cTransitionProp + delayKey]), parseMaxTime(elementStyles[vendorTransitionProp + delayKey]));
+                var animationDelay = Math.max(parseMaxTime(elementStyles[w3cAnimationProp + delayKey]), parseMaxTime(elementStyles[vendorAnimationProp + delayKey]));
+                var transitionDuration = Math.max(parseMaxTime(elementStyles[w3cTransitionProp + durationKey]), parseMaxTime(elementStyles[vendorTransitionProp + durationKey]));
+                var animationDuration = Math.max(parseMaxTime(elementStyles[w3cAnimationProp + durationKey]), parseMaxTime(elementStyles[vendorAnimationProp + durationKey]));
+                if (animationDuration > 0) {
+                  animationDuration *= Math.max(parseInt(elementStyles[w3cAnimationProp + animationIterationCountKey], 10) || 0, parseInt(elementStyles[vendorAnimationProp + animationIterationCountKey], 10) || 0, 1);
+                }
+                duration = Math.max(animationDelay + animationDuration, transitionDelay + transitionDuration, duration);
+              }
+            });
+            if (!duration) {
+              return $timeout(done, 0, false);
+            }
             var w3cAnimationEvent = 'animationend';
             var w3cTransitionEvent = 'transitionend';
             var vendorAnimationEvent = $sniffer.vendorPrefix + 'AnimationEnd';
@@ -120,8 +149,8 @@ angular.module('ngTouchNav').config([
                 vendorTransitionEvent
               ].join(' ');
             var callback = function () {
-              $timeout(done, 0, false);
               element.off(events, callback);
+              $timeout(done, 0, false);
             };
             element.on(events, callback);
           }
@@ -169,6 +198,9 @@ angular.module('ngTouchNav').run([
   '$navigate',
   function ($rootScope, $navigate) {
     $rootScope.$navigate = $navigate;
+    $rootScope.$redraw = function performRedraw() {
+      document.body.removeChild(document.body.appendChild(document.createElement('style')));
+    };
   }
 ]).provider('$navigate', function () {
   this.$get = [

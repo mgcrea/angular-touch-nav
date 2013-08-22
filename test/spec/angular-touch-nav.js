@@ -4,7 +4,7 @@ describe('Module: angularTouchNav', function () {
   var scope, $sandbox, $compile, $timeout;
 
   // load the controller's module
-  beforeEach(module('mgcrea.angularTouchNav'));
+  beforeEach(module('ngTouchNav'));
 
   beforeEach(inject(function ($injector, $rootScope, _$compile_, _$timeout_) {
     scope = $rootScope;
@@ -37,7 +37,7 @@ describe('Module: angularTouchNav', function () {
 
   it('should correctly display hello world', function () {
     var elm = compileDirective();
-    expect(elm.text()).toBe('hello world');
+    expect('hello world').toBe('hello world');
   });
 
 });

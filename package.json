@@ -35,6 +35,6 @@
     "grunt-contrib-connect": "~0.3.0",
     "grunt-contrib-less": "~0.7.0",
     "grunt-ngmin-concat": "~0.1.0",
-    "grunt-karma": "~0.6.1"
+    "grunt-karma": "~0.7.0"
   }
 }
