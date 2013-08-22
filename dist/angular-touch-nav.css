@@ -1,6 +1,6 @@
 /**
  * angular-touch-nav
- * @version v0.2.1 - 2013-08-22
+ * @version v0.2.2 - 2013-08-22
  * @link https://github.com/mgcrea/angular-touch-nav
  * @author Olivier Louvignes <olivier@mg-crea.com>
  * @license MIT License, http://www.opensource.org/licenses/MIT

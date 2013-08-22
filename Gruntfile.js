@@ -194,7 +194,7 @@ module.exports = function(grunt) {
     'karma:unit'
   ]);
 
-  grunt.registerTask('build', [
+  grunt.registerTask('dist', [
     'clean:dist',
     'less',
     'concat:dist',
@@ -210,6 +210,7 @@ module.exports = function(grunt) {
     'bump-commit'
   ]);
 
-  grunt.registerTask('default', ['build']);
+  grunt.registerTask('build', ['dist']);
+  grunt.registerTask('default', ['dist']);
 
 };
