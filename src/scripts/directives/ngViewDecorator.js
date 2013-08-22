@@ -6,7 +6,8 @@ angular.module('ngTouchNav')
 
   .config(function($provide) {
 
-    $provide.decorator('ngViewDirective', function($delegate, $navigate, $route, $anchorScroll, $compile, $controller, $animate) {
+    $provide.decorator('ngViewDirective', ['$delegate', '$navigate', '$route', '$anchorScroll', '$compile', '$controller', '$animate',
+      function($delegate, $navigate, $route, $anchorScroll, $compile, $controller, $animate) {
       var directive = $delegate[0];
 
       var NG_VIEW_PRIORITY = directive.priority;
@@ -95,6 +96,6 @@ angular.module('ngTouchNav')
       };
 
       return $delegate;
-    });
+    }]);
 
   });

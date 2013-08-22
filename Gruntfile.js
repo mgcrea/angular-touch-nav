@@ -119,13 +119,37 @@ module.exports = function(grunt) {
         autoWatch: true
       }
     },
-    ngmin: {
+    concat: {
       options: {
         banner: '<%= meta.banner %>'
       },
       dist: {
-        src: ['<%= yo.src %>/module.js', '<%= yo.src %>/{,*/}*.js'],
-        dest: '<%= yo.dist %>/<%= pkg.name %>.js'
+        options: {
+          // Replace all 'use strict' statements in the code with a single one at the top
+          banner: '(function(window, document, undefined) {\n\'use strict\';\n',
+          footer: '\n})(window, document);\n',
+          process: function(src, filepath) {
+            return '// Source: ' + filepath + '\n' +
+              src.replace(/(^|\n)[ \t]*('use strict'|"use strict");?\s*/g, '$1');
+          }
+        },
+        files: {
+          '<%= yo.dist %>/<%= pkg.name %>.js': [
+            '<%= yo.src %>/scripts/module.js',
+            '<%= yo.src %>/scripts/{,*/}*.js'
+          ]
+        }
+      }
+    },
+    ngmin: {
+      options: {
+        banner: '<%= meta.banner %>',
+        expand: true
+      },
+      dist: {
+        files: {
+          '<%= yo.dist %>/<%= pkg.name %>.js': ['<%= yo.dist %>/<%= pkg.name %>.js']
+        }
       }
     },
     uglify: {
@@ -133,8 +157,9 @@ module.exports = function(grunt) {
         banner: '<%= meta.banner %>'
       },
       dist: {
-        src: '<%= ngmin.dist.dest %>',
-        dest: '<%= yo.dist %>/<%= pkg.name %>.min.js'
+        files: {
+          '<%= yo.dist %>/<%= pkg.name %>.min.js': ['<%= Object.keys(ngmin.dist.files)[0] %>']
+        }
       }
     }
   });
@@ -146,6 +171,7 @@ module.exports = function(grunt) {
 
   grunt.registerTask('build', [
     'clean:dist',
+    'concat:dist',
     'ngmin:dist',
     'uglify:dist'
   ]);
