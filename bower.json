@@ -7,7 +7,6 @@
     "angular-animate": "1.2.0rc1"
   },
   "devDependencies": {
-    "angular-unstable": "latest",
     "angular-mocks": "1.2.0rc1",
     "jquery": "~2.0.3"
   }
