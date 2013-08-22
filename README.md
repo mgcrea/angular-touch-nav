@@ -65,7 +65,7 @@ When completed, you'll be able to run the various Grunt commands provided from t
 ### Available Grunt commands
 
 * Build - `grunt` - runs tests locally and compile the CSS and JavaScript into `/dist`.
-* Compile - `grunt dist` - creates the `/dist` directory with compiled files.
+* Compile - `grunt build` - creates the `/dist` directory with compiled files.
 * Tests - `grunt test` - runs jshint and unit tests headlessly in [phantomjs](https://github.com/ariya/phantomjs/) (used for CI).
 * Watch - `grunt watch` - watching files and automatically building them whenever you save.
 

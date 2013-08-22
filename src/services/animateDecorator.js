@@ -54,7 +54,7 @@ angular.module('ngTouchNav')
           //we want all the styles defined before and after
           var ELEMENT_NODE = 1;
           forEach(element, function(element) {
-            if (element.nodeType == ELEMENT_NODE) {
+            if (element.nodeType === ELEMENT_NODE) {
               var elementStyles = $window.getComputedStyle(element) || {};
 
               var transitionDelay     = Math.max(parseMaxTime(elementStyles[w3cTransitionProp     + delayKey]),
@@ -70,9 +70,9 @@ angular.module('ngTouchNav')
                                                  parseMaxTime(elementStyles[vendorAnimationProp   + durationKey]));
 
               if(animationDuration > 0) {
-                animationDuration *= Math.max(parseInt(elementStyles[w3cAnimationProp   + animationIterationCountKey]) || 0,
-                                             parseInt(elementStyles[vendorAnimationProp + animationIterationCountKey]) || 0,
-                                             1);
+                animationDuration *= Math.max(parseInt(elementStyles[w3cAnimationProp    + animationIterationCountKey], 10) || 0,
+                                              parseInt(elementStyles[vendorAnimationProp + animationIterationCountKey], 10) || 0,
+                                              1);
               }
 
               duration = Math.max(animationDelay  + animationDuration,
