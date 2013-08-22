@@ -9,7 +9,7 @@ angular.module('ngTouchNav')
     $rootScope.$navigate = $navigate;
     $rootScope.$redraw = function performRedraw() {
       document.body.removeChild(document.body.appendChild(document.createElement('style')));
-    }
+    };
   })
 
   .provider('$navigate', function() {
