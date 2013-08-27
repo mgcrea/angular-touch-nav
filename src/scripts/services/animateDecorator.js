@@ -93,8 +93,8 @@ angular.module('ngTouchNav')
           var w3cTransitionEvent = 'transitionend';
 
           //but some still use vendor-prefixed events
-          var vendorAnimationEvent = $sniffer.vendorPrefix + 'AnimationEnd';
-          var vendorTransitionEvent = $sniffer.vendorPrefix + 'TransitionEnd';
+          var vendorAnimationEvent = $sniffer.vendorPrefix.toLowerCase() + 'AnimationEnd';
+          var vendorTransitionEvent = $sniffer.vendorPrefix.toLowerCase() + 'TransitionEnd';
 
           var events = [w3cAnimationEvent, vendorAnimationEvent, w3cTransitionEvent, vendorTransitionEvent].join(' ');
           var callback = function() {
