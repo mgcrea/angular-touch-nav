@@ -103,6 +103,8 @@ angular.module('ngTouchNav')
           };
           element.on(events, callback);
 
+          //if the end events don't fire, run the callback 10ms later anyway:
+          $timeout(callback, duration*1000+10, false);
         }
 
         //this will automatically be called by $animate so
