@@ -186,6 +186,16 @@ module.exports = function(grunt) {
           '<%= yo.dist %>/<%= pkg.name %>.min.js': ['<%= Object.keys(ngmin.dist.files)[0] %>']
         }
       }
+    },
+    bump: {
+      options: {
+        files: ['package.json', 'bower.json'],
+        commitMessage: 'chore(release): cut the <%= pkg.version %> release',
+        tagName: 'v<%= pkg.version %>',
+        tagMessage: 'chore(release): cut the <%= pkg.version %> release',
+        commitFiles: ['-a'],
+        pushTo: 'github'
+      }
     }
   });
 
@@ -194,7 +204,7 @@ module.exports = function(grunt) {
     'karma:unit'
   ]);
 
-  grunt.registerTask('dist', [
+  grunt.registerTask('build', [
     'clean:dist',
     'less',
     'concat:dist',
@@ -206,11 +216,10 @@ module.exports = function(grunt) {
   grunt.registerTask('release', [
     'test',
     'bump-only',
-    'dist',
+    'build',
     'bump-commit'
   ]);
 
-  grunt.registerTask('build', ['dist']);
-  grunt.registerTask('default', ['dist']);
+  grunt.registerTask('default', ['build']);
 
 };

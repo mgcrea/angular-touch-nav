@@ -1,6 +1,6 @@
 /**
  * angular-touch-nav
- * @version v0.2.2 - 2013-08-22
+ * @version v0.2.3 - 2013-08-29
  * @link https://github.com/mgcrea/angular-touch-nav
  * @author Olivier Louvignes <olivier@mg-crea.com>
  * @license MIT License, http://www.opensource.org/licenses/MIT
@@ -25,15 +25,10 @@
         '$animate',
         function ($delegate, $navigate, $route, $anchorScroll, $compile, $controller, $animate) {
           var directive = $delegate[0];
-          var NG_VIEW_PRIORITY = directive.priority;
-          var firstRenderedView = true;
-          directive.compile = function (element, attr) {
-            var onloadExp = attr.onload || '';
-            element.html('');
-            var anchor = jqLite(document.createComment(' ngView '));
-            element.replaceWith(anchor);
-            return function (scope) {
-              var currentScope, currentElement, lastAnimation;
+          directive.compile = function (element, attr, linker) {
+            var firstRenderedView = true, lastAnimation = null;
+            return function (scope, $element, attr) {
+              var currentScope, currentElement, onloadExp = attr.onload || '';
               scope.$on('$routeChangeSuccess', update);
               update();
               function cleanupLastView() {
@@ -53,37 +48,39 @@
               function update() {
                 var locals = $route.current && $route.current.locals, template = locals && locals.$template;
                 if (template) {
-                  cleanupLastView();
-                  currentScope = scope.$new();
-                  currentElement = element.clone();
-                  currentElement.html(template);
-                  if ($navigate.animation) {
-                    lastAnimation = $navigate.animation;
-                    if (!firstRenderedView) {
-                      currentElement.addClass($navigate.animation);
-                    } else {
-                      setTimeout(function () {
-                        firstRenderedView = false;
-                        currentElement.addClass($navigate.animation);
-                      });
+                  var newScope = scope.$new();
+                  linker(newScope, function (clone) {
+                    cleanupLastView();
+                    clone.html(template);
+                    if ($navigate.animation) {
+                      lastAnimation = $navigate.animation;
+                      if (!firstRenderedView) {
+                        clone.addClass($navigate.animation);
+                      } else {
+                        setTimeout(function () {
+                          firstRenderedView = false;
+                          clone.addClass($navigate.animation);
+                        });
+                      }
                     }
-                  }
-                  $animate.enter(currentElement, null, anchor);
-                  var link = $compile(currentElement, false, NG_VIEW_PRIORITY - 1), current = $route.current;
-                  if (current.controller) {
-                    locals.$scope = currentScope;
-                    var controller = $controller(current.controller, locals);
-                    if (current.controllerAs) {
-                      currentScope[current.controllerAs] = controller;
+                    $animate.enter(clone, null, $element);
+                    var link = $compile(clone.contents()), current = $route.current;
+                    currentScope = current.scope = newScope;
+                    currentElement = clone;
+                    if (current.controller) {
+                      locals.$scope = currentScope;
+                      var controller = $controller(current.controller, locals);
+                      if (current.controllerAs) {
+                        currentScope[current.controllerAs] = controller;
+                      }
+                      clone.data('$ngControllerController', controller);
+                      clone.contents().data('$ngControllerController', controller);
                     }
-                    currentElement.data('$ngControllerController', controller);
-                    currentElement.children().data('$ngControllerController', controller);
-                  }
-                  current.scope = currentScope;
-                  link(currentScope);
-                  currentScope.$emit('$viewContentLoaded');
-                  currentScope.$eval(onloadExp);
-                  $anchorScroll();
+                    link(currentScope);
+                    currentScope.$emit('$viewContentLoaded');
+                    currentScope.$eval(onloadExp);
+                    $anchorScroll();
+                  });
                 } else {
                   cleanupLastView();
                 }
@@ -106,13 +103,82 @@
         function ($window, $sniffer, $timeout) {
           var noop = angular.noop;
           var forEach = angular.forEach;
+          var w3cAnimationProp = 'animation';
+          var w3cTransitionProp = 'transition';
+          var vendorAnimationProp = $sniffer.vendorPrefix + 'Animation';
+          var vendorTransitionProp = $sniffer.vendorPrefix + 'Transition';
+          var durationKey = 'Duration', delayKey = 'Delay', animationIterationCountKey = 'IterationCount', ELEMENT_NODE = 1;
           function animate(element, className, done) {
             if (!($sniffer.transitions || $sniffer.animations)) {
               done();
-            } else {
+              return;
+            } else if ([
+                'ng-enter',
+                'ng-leave',
+                'ng-move'
+              ].indexOf(className) == -1) {
+              var existingDuration = 0;
+              forEach(element, function (element) {
+                if (element.nodeType == ELEMENT_NODE) {
+                  var elementStyles = $window.getComputedStyle(element) || {};
+                  existingDuration = Math.max(parseMaxTime(elementStyles[w3cTransitionProp + durationKey]), parseMaxTime(elementStyles[vendorTransitionProp + durationKey]), existingDuration);
+                }
+              });
+              if (existingDuration > 0) {
+                done();
+                return;
+              }
+            }
+            element.addClass(className);
+            var duration = 0;
+            forEach(element, function (element) {
+              if (element.nodeType == ELEMENT_NODE) {
+                var elementStyles = $window.getComputedStyle(element) || {};
+                var transitionDelay = Math.max(parseMaxTime(elementStyles[w3cTransitionProp + delayKey]), parseMaxTime(elementStyles[vendorTransitionProp + delayKey]));
+                var animationDelay = Math.max(parseMaxTime(elementStyles[w3cAnimationProp + delayKey]), parseMaxTime(elementStyles[vendorAnimationProp + delayKey]));
+                var transitionDuration = Math.max(parseMaxTime(elementStyles[w3cTransitionProp + durationKey]), parseMaxTime(elementStyles[vendorTransitionProp + durationKey]));
+                var animationDuration = Math.max(parseMaxTime(elementStyles[w3cAnimationProp + durationKey]), parseMaxTime(elementStyles[vendorAnimationProp + durationKey]));
+                if (animationDuration > 0) {
+                  animationDuration *= Math.max(parseInt(elementStyles[w3cAnimationProp + animationIterationCountKey]) || 0, parseInt(elementStyles[vendorAnimationProp + animationIterationCountKey]) || 0, 1);
+                }
+                duration = Math.max(animationDelay + animationDuration, transitionDelay + transitionDuration, duration);
+              }
+            });
+            if (duration > 0) {
               var activeClassName = '';
-              $timeout(startAnimation, 1, false);
-              return onEnd;
+              forEach(className.split(' '), function (klass, i) {
+                activeClassName += (i > 0 ? ' ' : '') + klass + '-active';
+              });
+              $timeout(function () {
+                element.addClass(activeClassName);
+                $timeout(done, duration * 1000 + 50, false);
+                var w3cAnimationEvent = 'animationend';
+                var w3cTransitionEvent = 'transitionend';
+                var vendorAnimationEvent = $sniffer.vendorPrefix.toLowerCase() + 'AnimationEnd';
+                var vendorTransitionEvent = $sniffer.vendorPrefix.toLowerCase() + 'TransitionEnd';
+                var events = [
+                    w3cAnimationEvent,
+                    vendorAnimationEvent,
+                    w3cTransitionEvent,
+                    vendorTransitionEvent
+                  ].join(' ');
+                var callback = function () {
+                  console.warn('callback');
+                  element.off(events, callback);
+                  $timeout(done, 0, false);
+                };
+                element.on(events, callback);
+              }, 0, false);
+              return function onEnd(cancelled) {
+                element.removeClass(className);
+                element.removeClass(activeClassName);
+                if (cancelled) {
+                  done();
+                }
+              };
+            } else {
+              element.removeClass(className);
+              done();
             }
             function parseMaxTime(str) {
               var total = 0, values = angular.isString(str) ? str.split(/\s*,\s*/) : [];
@@ -120,56 +186,6 @@
                 total = Math.max(parseFloat(value) || 0, total);
               });
               return total;
-            }
-            function startAnimation() {
-              var duration = 0;
-              forEach(className.split(' '), function (klass, i) {
-                activeClassName += (i > 0 ? ' ' : '') + klass + '-active';
-              });
-              element.addClass(activeClassName);
-              var w3cAnimationProp = 'animation';
-              var w3cTransitionProp = 'transition';
-              var vendorAnimationProp = $sniffer.vendorPrefix + 'Animation';
-              var vendorTransitionProp = $sniffer.vendorPrefix + 'Transition';
-              var durationKey = 'Duration', delayKey = 'Delay', animationIterationCountKey = 'IterationCount';
-              var ELEMENT_NODE = 1;
-              forEach(element, function (element) {
-                if (element.nodeType === ELEMENT_NODE) {
-                  var elementStyles = $window.getComputedStyle(element) || {};
-                  var transitionDelay = Math.max(parseMaxTime(elementStyles[w3cTransitionProp + delayKey]), parseMaxTime(elementStyles[vendorTransitionProp + delayKey]));
-                  var animationDelay = Math.max(parseMaxTime(elementStyles[w3cAnimationProp + delayKey]), parseMaxTime(elementStyles[vendorAnimationProp + delayKey]));
-                  var transitionDuration = Math.max(parseMaxTime(elementStyles[w3cTransitionProp + durationKey]), parseMaxTime(elementStyles[vendorTransitionProp + durationKey]));
-                  var animationDuration = Math.max(parseMaxTime(elementStyles[w3cAnimationProp + durationKey]), parseMaxTime(elementStyles[vendorAnimationProp + durationKey]));
-                  if (animationDuration > 0) {
-                    animationDuration *= Math.max(parseInt(elementStyles[w3cAnimationProp + animationIterationCountKey], 10) || 0, parseInt(elementStyles[vendorAnimationProp + animationIterationCountKey], 10) || 0, 1);
-                  }
-                  duration = Math.max(animationDelay + animationDuration, transitionDelay + transitionDuration, duration);
-                }
-              });
-              if (!duration) {
-                return $timeout(done, 0, false);
-              }
-              var w3cAnimationEvent = 'animationend';
-              var w3cTransitionEvent = 'transitionend';
-              var vendorAnimationEvent = $sniffer.vendorPrefix + 'AnimationEnd';
-              var vendorTransitionEvent = $sniffer.vendorPrefix + 'TransitionEnd';
-              var events = [
-                  w3cAnimationEvent,
-                  vendorAnimationEvent,
-                  w3cTransitionEvent,
-                  vendorTransitionEvent
-                ].join(' ');
-              var callback = function () {
-                element.off(events, callback);
-                $timeout(done, 0, false);
-              };
-              element.on(events, callback);
-            }
-            function onEnd(cancelled) {
-              element.removeClass(activeClassName);
-              if (cancelled) {
-                done();
-              }
             }
           }
           return {
