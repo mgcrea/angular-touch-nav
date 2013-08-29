@@ -10,18 +10,15 @@ angular.module('ngTouchNav')
       function($delegate, $navigate, $route, $anchorScroll, $compile, $controller, $animate) {
       var directive = $delegate[0];
 
-      var NG_VIEW_PRIORITY = directive.priority;
-      var firstRenderedView = true;
+      directive.compile = function(element, attr, linker) {
 
-      directive.compile = function(element, attr) {
-        var onloadExp = attr.onload || '';
+        var firstRenderedView = true,
+            lastAnimation = null;
 
-        element.html('');
-        var anchor = jqLite(document.createComment(' ngView '));
-        element.replaceWith(anchor);
-
-        return function(scope) {
-          var currentScope, currentElement, lastAnimation;
+        return function(scope, $element, attr) {
+          var currentScope,
+              currentElement,
+              onloadExp = attr.onload || '';
 
           scope.$on('$routeChangeSuccess', update);
           update();
@@ -32,7 +29,7 @@ angular.module('ngTouchNav')
               currentScope = null;
             }
             if(currentElement) {
-              //animation hook
+              //$navigate hook
               if($navigate.animation !== lastAnimation) {
                 currentElement.removeClass(lastAnimation);
                 $navigate.animation && currentElement.addClass($navigate.animation);
@@ -47,55 +44,57 @@ angular.module('ngTouchNav')
                 template = locals && locals.$template;
 
             if (template) {
-              cleanupLastView();
+              var newScope = scope.$new();
+              linker(newScope, function(clone) {
+                cleanupLastView();
 
-              currentScope = scope.$new();
-              currentElement = element.clone();
-              currentElement.html(template);
-              //animation hook
-              if($navigate.animation) {
-                lastAnimation = $navigate.animation;
-                if(!firstRenderedView) {
-                  currentElement.addClass($navigate.animation);
-                } else {
-                  setTimeout(function() {
-                    firstRenderedView = false;
-                    currentElement.addClass($navigate.animation);
-                  });
+                clone.html(template);
+                //$navigate hook
+                if($navigate.animation) {
+                  lastAnimation = $navigate.animation;
+                  if(!firstRenderedView) {
+                    clone.addClass($navigate.animation);
+                  } else {
+                    setTimeout(function() {
+                      firstRenderedView = false;
+                      clone.addClass($navigate.animation);
+                    });
+                  }
                 }
-              }
-              $animate.enter(currentElement, null, anchor);
+                $animate.enter(clone, null, $element);
 
-              var link = $compile(currentElement, false, NG_VIEW_PRIORITY - 1),
-                  current = $route.current;
+                var link = $compile(clone.contents()),
+                    current = $route.current;
 
-              if (current.controller) {
-                locals.$scope = currentScope;
-                var controller = $controller(current.controller, locals);
-                if (current.controllerAs) {
-                  currentScope[current.controllerAs] = controller;
+                currentScope = current.scope = newScope;
+                currentElement = clone;
+
+                if (current.controller) {
+                  locals.$scope = currentScope;
+                  var controller = $controller(current.controller, locals);
+                  if (current.controllerAs) {
+                    currentScope[current.controllerAs] = controller;
+                  }
+                  clone.data('$ngControllerController', controller);
+                  clone.contents().data('$ngControllerController', controller);
                 }
-                currentElement.data('$ngControllerController', controller);
-                currentElement.children().data('$ngControllerController', controller);
-              }
 
-              current.scope = currentScope;
+                link(currentScope);
+                currentScope.$emit('$viewContentLoaded');
+                currentScope.$eval(onloadExp);
 
-              link(currentScope);
-
-              currentScope.$emit('$viewContentLoaded');
-              currentScope.$eval(onloadExp);
-
-              // $anchorScroll might listen on event...
-              $anchorScroll();
+                // $anchorScroll might listen on event...
+                $anchorScroll();
+              });
             } else {
               cleanupLastView();
             }
           }
-        };
+        }
       };
 
       return $delegate;
+
     }]);
 
   });
